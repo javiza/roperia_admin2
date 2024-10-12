@@ -1,7 +1,6 @@
 import { Prenda } from '../model/prenda';
 import { Injectable } from '@angular/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
-
 import { Capacitor } from '@capacitor/core';
 
 @Injectable({
@@ -12,7 +11,7 @@ export class DbService {
   private sqlite:SQLiteConnection = new SQLiteConnection(CapacitorSQLite)
   private db!:SQLiteDBConnection
   platform: string = "";
-  iniciado:boolean = true 
+  iniciado:boolean = false; 
   
   private readonly DB_NAME        = "roperia"
   private readonly DB_VERSION     = 1
@@ -43,13 +42,18 @@ export class DbService {
       console.log("DbService::iniciarPlugin")
       this.platform = Capacitor.getPlatform()
   
-      console.log("DbService::iniciarPlugin plataform="+this.platform)
+      console.log("DbService::iniciarPlugin plataform=" + this.platform)
       if(this.platform == "web") {        
-        await customElements.whenDefined('jeep-sqlite')        
-        const jeepSqliteEl = document.querySelector('jeep-sqlite')
+        await customElements.whenDefined('jeep-sqlite')   
+        console.log("Estado del DOM antes de buscar jeep-sqlite:", document.body.innerHTML);
+        await new Promise(resolve => setTimeout(resolve, 1000)); 
+        const jeepSqliteEl = document.querySelector('jeep-sqlite')//aca no toma jeep-sqlite
         if(jeepSqliteEl != null) {
           console.log("DbService::iniciarPlugin::initWebStore")
           await this.sqlite.initWebStore()
+        }
+        else {
+          throw new Error("El elemento jeep-sqlite no está presente en el DOM.");
         }
       }
   
@@ -97,17 +101,16 @@ export class DbService {
       }
       this.iniciado = true 
     } catch(e) {
-      console.error(e)
+      console.error("Error al iniciar el plugin: ", e);
     }
     
   }
-
-  async cerrarConexion() {
-    await this.db.close() 
-  }
-
   async obtenerTodos():Promise<Prenda[]> {
-    console.log("antes del select")
+    if (!this.iniciado) {
+      console.error("La base de datos no ha sido inicializada.");
+      return [];
+    }
+    
     const sql = `SELECT * FROM ${this.DB_TABLE_NAME}`
     console.log(sql)
     console.dir(this.db)
@@ -115,6 +118,11 @@ export class DbService {
     console.dir(resultado) 
     return resultado ?? []
   }
+  async cerrarConexion() {
+    await this.db.close() 
+  }
+
+
 
   async insertar(prenda:Prenda) {
     const sql = `INSERT INTO ${this.DB_TABLE_NAME}(${this.DB_COL_NAME}, ${this.DB_COL_CANT}, ${this.DB_COL_DESC}) VALUES(?,?,?)`

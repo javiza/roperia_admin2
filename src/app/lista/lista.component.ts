@@ -26,13 +26,11 @@ export class ListaComponent implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit() {
-    try {
-      await this.dbService.iniciarPlugin(); // Esperar a que se inicialice
-      const prendas = await this.dbService.obtenerTodos(); // Ahora puedes obtener los datos
-      console.log(prendas);
-    } catch (error) {
-      console.error("Error al inicializar la base de datos", error);
-    }
+    console.log("ListaComponent::ngOnInit - DbService::iniciarPlugin()");
+    await this.dbService.iniciarPlugin();
+    const prendas = await this.dbService.obtenerTodos();
+    console.log(prendas)
+    await this.actualizar();
   }
 
   async ngOnDestroy() {
