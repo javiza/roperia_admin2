@@ -76,14 +76,7 @@ export class DbService {
       console.log(this.DB_SQL_TABLES)
       await this.db.execute(this.DB_SQL_TABLES)
   
-      await this.insertar({
-        nombre: "sabana",
-        descripcion: "verde"
-      })
-      await this.insertar({
-        nombre: "sabana",
-        descripcion: "blanca"
-      })
+      
 
       if(this.platform == "web") {
         console.log("DbService::iniciarPlugin::saveStore()")
