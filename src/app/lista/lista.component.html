@@ -8,10 +8,7 @@
           <ion-input [(ngModel)]="nombre" name="nombre"></ion-input> <!-- name es requerido para ngModel -->
         </ion-item>
         <!-- No es necesario un campo de cantidad, ya que se establece a 1 en el componente -->
-        <ion-item>
-          <ion-label position="floating">Cantidad</ion-label>
-          <ion-input [(ngModel)]="cantidad" name="cantidad" type="number"></ion-input>
-        </ion-item>
+       
         <ion-item>
           <ion-label position="floating">Descripción</ion-label>
           <ion-input [(ngModel)]="descripcion" name="descripcion"></ion-input>
@@ -22,13 +19,17 @@
   </div>
 </div>
 <div class="container">
+ <h3>lista de ropa</h3> 
   <ion-list>
-    <ion-item *ngFor="let prenda of prendas">
-      <ion-label>{{ prenda.nombre }}</ion-label>
-      <ion-label>{{ prenda.cantidad }}</ion-label>
-      <ion-label>{{ prenda.descripcion }}</ion-label>
-      <ion-button (click)="onPrendaChange(prenda)">Editar</ion-button>
+    <ion-item *ngFor="let productos of productos">
+      <ion-label ></ion-label>
+      <ion-input [(ngModel)]="productos.nombre" name="nombre"></ion-input>
+      <ion-label ></ion-label>
+      <ion-input [(ngModel)]="productos.descripcion" name="descripcion"></ion-input>
+      <ion-button (click)="onProductoChange(productos)">Editar</ion-button>
+      <ion-button color="danger" (click)="eliminarProducto(productos.id!)">Eliminar</ion-button>
     </ion-item>
   </ion-list>
 </div>
+
 

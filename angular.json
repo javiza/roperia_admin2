@@ -16,11 +16,8 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-builders/custom-webpack:browser",
+          "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "customWebpackConfig": {
-              "path": "./extra-webpack.config.js"
-            },
             "outputPath": "www",
             "index": "src/index.html",
             "main": "src/main.ts",
@@ -37,10 +34,6 @@
             "styles": ["src/theme/variables.scss", "src/global.scss"],
             "scripts": []
           },
-          "allowedCommonJsDependencies": [
-            "crypto",
-            "jeep-sqlite"
-          ],
           "configurations": {
             "production": {
               "budgets": [
@@ -133,10 +126,7 @@
     }
   },
   "cli": {
-    "schematicCollections": [
-      "@ionic/angular-toolkit"
-    ],
-    "analytics": false
+    "schematicCollections": ["@ionic/angular-toolkit"]
   },
   "schematics": {
     "@ionic/angular-toolkit:component": {

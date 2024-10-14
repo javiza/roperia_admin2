@@ -2,6 +2,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/angular/standalone';
 import { ListaComponent } from '../lista/lista.component';
+import { MenuComponent } from '../menu/menu.component';
 import { RouterModule } from '@angular/router'
 import { addIcons } from 'ionicons'
 import { settingsOutline } from 'ionicons/icons'
@@ -11,7 +12,7 @@ import { settingsOutline } from 'ionicons/icons'
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
-  imports: [RouterModule, IonHeader, IonToolbar, IonTitle, IonContent, ListaComponent],
+  imports: [RouterModule, IonHeader, IonToolbar, IonTitle, IonContent, ListaComponent, MenuComponent],
 })
 export class HomePage implements OnInit {
 

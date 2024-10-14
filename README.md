@@ -17,4 +17,3 @@ Usando Ionic Framework y Angular desarrolle una aplicación que ayude a las pers
 7.	El componente de configuraciones debe permitir marcar si se desea ordenar la lista en orden alfabético
 
 8.	Genere un enlace en la cabecera de la aplicación hacia la configuración usando un icono. Para volver a la pantalla principal utilice el componente ion-back-button.
-# roperia_admin2
