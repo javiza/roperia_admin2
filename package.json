@@ -1,7 +1,7 @@
 {
   "name": "ph-u2-ej3",
   "version": "0.0.1",
-  "author": "Jonathan Bustos Ramos",
+  "author": "jonathan bustos ramos",
   "homepage": "https://ionicframework.com/",
   "scripts": {
     "ng": "ng",
@@ -37,7 +37,7 @@
     "zone.js": "~0.14.2"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^17.0.0",
+    "@angular-devkit/build-angular": "^17.0.8",
     "@angular-eslint/builder": "^17.0.0",
     "@angular-eslint/eslint-plugin": "^17.0.0",
     "@angular-eslint/eslint-plugin-template": "^17.0.0",
@@ -46,8 +46,8 @@
     "@angular/cli": "^17.0.0",
     "@angular/compiler-cli": "^17.0.2",
     "@angular/language-service": "^17.0.2",
-    "@capacitor/cli": "5.6.0",
-    "@ionic/angular-toolkit": "^9.0.0",
+    "@capacitor/cli": "^5.6.0",
+    "@ionic/angular-toolkit": "12.1.1",
     "@types/jasmine": "~5.1.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
