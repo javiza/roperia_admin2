@@ -49,5 +49,11 @@ export class ProductoService {
   async agregarFuncionario(nombre_funcionario: string, nombre_prenda: string, roperia_id: number) {
     await this.dbService.insertarFuncionario(nombre_funcionario, nombre_prenda, roperia_id);
   }
+  async agregarUsuario(nombre_funcionario: string, rut: string, password: string, roperia_id: number) {
+    await this.dbService.insertarUsuario(nombre_funcionario, rut, password, roperia_id);
+  }
+  async agregarAdmin(nombre_admin: string, rut: string, password: string) {
+    await this.dbService.insertarAdmin(nombre_admin, rut, password);
+  }
 }
 
