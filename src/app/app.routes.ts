@@ -10,9 +10,6 @@ export const routes: Routes = [
     redirectTo: 'home',
     pathMatch: 'full',
   },
-  {
-    path: 'lavanderia',
-    loadComponent: () => import('./lavanderia/lavanderia.page').then( m => m.LavanderiaPage)
-  },
+ 
   
 ];

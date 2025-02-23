@@ -6,18 +6,19 @@ import { MenuComponent } from '../menu/menu.component';
 import { RouterModule } from '@angular/router'
 import { addIcons } from 'ionicons'
 import { settingsOutline } from 'ionicons/icons'
+import { LavanderiaComponent } from '../lavanderia/lavanderia.component';
 
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
-  imports: [RouterModule, IonHeader, IonToolbar, IonTitle, IonContent, ListaComponent, MenuComponent],
+  imports: [RouterModule, IonHeader, IonToolbar, IonTitle, IonContent, ListaComponent, LavanderiaComponent],
 })
 export class HomePage implements OnInit {
 
   @ViewChild(ListaComponent) lista!:ListaComponent
-
+  @ViewChild(LavanderiaComponent) lavanderia!:LavanderiaComponent
   constructor() {
     addIcons({
       settingsOutline
@@ -29,6 +30,6 @@ export class HomePage implements OnInit {
   ionViewWillEnter():void {
     console.log("HomePage::ionViewWillEnter")
     this.lista.ionViewWillEnter() 
-    
+    this.lavanderia.ionViewWillEnter()
   }
 }

@@ -13,7 +13,12 @@
           <ion-label position="floating">Descripción</ion-label>
           <ion-input [(ngModel)]="descripcion" name="descripcion"></ion-input>
         </ion-item>
+        <ion-item>
+          <ion-label position="floating">Cantidad</ion-label>
+          <ion-input [(ngModel)]="cantidad" name="cantidad"></ion-input>
+        </ion-item>
       </ion-list>
+  
       <ion-button expand="block" type="submit" class="ion-margin-top">Enviar</ion-button> <!-- El botón puede disparar el ngSubmit -->
     </form>
   </div>
@@ -26,6 +31,9 @@
       <ion-input [(ngModel)]="productos.nombre" name="nombre"></ion-input>
       <ion-label ></ion-label>
       <ion-input [(ngModel)]="productos.descripcion" name="descripcion"></ion-input>
+      <ion-label ></ion-label>
+      <ion-input [(ngModel)]="productos.cantidad" name="cantidad"></ion-input>
+      
       <ion-button (click)="onProductoChange(productos)">Editar</ion-button>
       <ion-button color="danger" (click)="eliminarProducto(productos.id!)">Eliminar</ion-button>
     </ion-item>

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Producto } from '../modelo/producto';
+import { Producto, Lavanderia } from '../modelo/producto';
 import { DbService } from './db.service';
 
 @Injectable({
@@ -14,11 +14,11 @@ export class ProductoService {
   async agregarProducto(producto: Producto) {
     await this.dbService.insertar(producto);
   }
-
+  
   async getProductos(): Promise<Producto[]> {
     return this.dbService.obtenerTodos();
   }
-  
+ 
   async getProductosOrdenadosAlfabeticamente(): Promise<Producto[]> {
     const productos = await this.getProductos();
     return productos?.sort((a, b) => a?.nombre?.localeCompare(b?.nombre));
@@ -33,24 +33,35 @@ export class ProductoService {
       await this.dbService.eliminar(id);
     }    
   }
+  async editarRopaLavanderia(producto: Lavanderia) {
+    await this.dbService.actualizarLavanderia(producto);
+  }
+  async getLavanderia(): Promise<Lavanderia[]> {
+    return this.dbService.obtenerTodosLavanderia();
+  }
+  async agregarLavanderia(producto: Lavanderia) {
+    await this.dbService.insertarRopaLavanderia(producto);
+  }
+  async eliminarLavanderia(id: number) {
+    if (id !== undefined && id > 0) {
+      await this.dbService.eliminarLavanderia(id);
+    }
+  }
+  
 
-  async agregarLavanderia(nombre_prenda: string, roperia_id: number) {
-    await this.dbService.insertarLavanderia(nombre_prenda, roperia_id);
+  async agregarUnidad(nombre_prenda: string, cantidad: number, roperia_id: number) {
+    await this.dbService.insertarRopaUnidad(nombre_prenda, cantidad, roperia_id);
   }
 
-  async agregarUnidad(nombre_prenda: string, roperia_id: number) {
-    await this.dbService.insertarUnidad(nombre_prenda, roperia_id);
-  }
-
-  async agregarBaja(nombre_prenda: string, roperia_id: number) {
-    await this.dbService.insertarBajas(nombre_prenda, roperia_id);
+  async agregarBaja(nombre_prenda: string, cantidad: number, roperia_id: number) {
+    await this.dbService.insertarBajas(nombre_prenda, cantidad, roperia_id);
   }
 
   async agregarFuncionario(nombre_funcionario: string, nombre_prenda: string, roperia_id: number) {
     await this.dbService.insertarFuncionario(nombre_funcionario, nombre_prenda, roperia_id);
   }
-  async agregarUsuario(nombre_funcionario: string, rut: string, password: string, roperia_id: number) {
-    await this.dbService.insertarUsuario(nombre_funcionario, rut, password, roperia_id);
+  async agregarUsuario(nombre_usuario: string, rut: string, password: string, roperia_id: number) {
+    await this.dbService.insertarUsuario(nombre_usuario, rut, password, roperia_id);
   }
   async agregarAdmin(nombre_admin: string, rut: string, password: string) {
     await this.dbService.insertarAdmin(nombre_admin, rut, password);
