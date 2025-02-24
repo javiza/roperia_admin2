@@ -39,7 +39,7 @@ export class DbService {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre_prenda TEXT NOT NULL,
     cantidad INTEGER NOT NULL,
-    roperia_id INTEGER NOT NULL,
+    roperia_id INTEGER,
     FOREIGN KEY (roperia_id) REFERENCES ${this.DB_TABLE_ROPERIA} (id) ON DELETE CASCADE
   );
 
@@ -47,7 +47,7 @@ export class DbService {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre_prenda TEXT NOT NULL,
     cantidad INTEGER NOT NULL,
-    roperia_id INTEGER NOT NULL,
+    roperia_id INTEGER,
     FOREIGN KEY (roperia_id) REFERENCES ${this.DB_TABLE_ROPERIA} (id) ON DELETE CASCADE
   );
 
@@ -55,7 +55,7 @@ export class DbService {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre_prenda TEXT NOT NULL,
     cantidad INTEGER NOT NULL,
-    roperia_id INTEGER NOT NULL,
+    roperia_id INTEGER ,
     FOREIGN KEY (roperia_id) REFERENCES ${this.DB_TABLE_ROPERIA} (id) ON DELETE CASCADE
   );
 
@@ -64,7 +64,7 @@ export class DbService {
     nombre_funcionario TEXT NOT NULL,
     nombre_prenda TEXT NOT NULL,
     cantidad INTEGER NOT NULL,
-    roperia_id INTEGER NOT NULL,
+    roperia_id INTEGER ,
     FOREIGN KEY (roperia_id) REFERENCES ${this.DB_TABLE_ROPERIA} (id) ON DELETE CASCADE
   );
 
@@ -80,7 +80,7 @@ export class DbService {
     nombre_usuario TEXT NOT NULL,
     rut TEXT NOT NULL,
     password TEXT NOT NULL,
-    roperia_id INTEGER NOT NULL,
+    roperia_id INTEGER ,
     FOREIGN KEY (roperia_id) REFERENCES ${this.DB_TABLE_ROPERIA} (id) ON DELETE CASCADE
   );
 `;
@@ -127,11 +127,12 @@ export class DbService {
     const resultado = (await this.db.query(sql)).values;
     return resultado ?? [];
   }
-  
+ 
   async insertar(producto: Producto) {
-    const sql = `INSERT INTO ${this.DB_TABLE_ROPERIA} (nombre, descripcion, cantidad) VALUES (?,?,?)`;
-    await this.db.run(sql, [producto.nombre, producto.descripcion, producto.cantidad,]);
+    const sql = `INSERT INTO ${this.DB_TABLE_ROPERIA} (nombre, descripcion, cantidad) VALUES (?, ?, ?);`;
+    await this.db.run(sql, [producto.nombre, producto.descripcion, producto.cantidad]);
   }
+  
 
   async actualizar(producto: Producto) {
     const sql = `UPDATE ${this.DB_TABLE_ROPERIA} SET nombre = ?, descripcion = ?, cantidad = ? WHERE id = ?`;
@@ -142,7 +143,8 @@ export class DbService {
     const sql = `DELETE FROM ${this.DB_TABLE_ROPERIA} WHERE id = ?`;
     await this.db.run(sql, [id]);
   }
- 
+ //LAVANDERIA
+
   async insertarRopaLavanderia(producto: Lavanderia) {
     const sql = `INSERT INTO ${this.DB_TABLE_LAVANDERIA} (nombre_prenda, cantidad, roperia_id) VALUES (?, ?, ?)`;
     await this.db.run(sql, [producto.nombre_prenda, producto.cantidad, producto.roperia_id]);
@@ -162,6 +164,8 @@ export class DbService {
     const sql = `DELETE FROM ${this.DB_TABLE_LAVANDERIA} WHERE id = ?`;
     await this.db.run(sql, [id]);
   }
+
+  //ROPA UNIDAD
   async insertarRopaUnidad(nombre_prenda: string, cantidad: number, roperia_id: number) {
     const sql = `INSERT INTO ${this.DB_TABLE_UNIDAD} (nombre_prenda, cantidad, roperia_id) VALUES (?, ?, ?)`;
     await this.db.run(sql, [nombre_prenda, cantidad, roperia_id]);

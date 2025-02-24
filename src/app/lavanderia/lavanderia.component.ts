@@ -17,9 +17,10 @@ import { CommonModule } from '@angular/common';
 export class LavanderiaComponent implements OnInit, OnDestroy {
   productos: Lavanderia[] = [];
  
+
   nombre_prenda: string = '';
   cantidad: number = 0;
-  roperia_id: number = 1;
+  // roperia_id: number = 1;
 
   constructor(
     private dbService: DbService,
@@ -29,6 +30,7 @@ export class LavanderiaComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     console.log("ListaComponent::ngOnInit - DbService::iniciarPlugin()");
     await this.dbService.iniciarPlugin();
+
     const productos = await this.dbService.obtenerTodos();
     console.log(productos)
     await this.actualizar();
@@ -58,13 +60,13 @@ export class LavanderiaComponent implements OnInit, OnDestroy {
     const p: Lavanderia = {
       nombre_prenda: this.nombre_prenda.trim(),
       cantidad: this.cantidad > 0 ? this.cantidad : 1,
-      roperia_id: this.roperia_id || 1 // Asegura que tenga un valor válido
+      roperia_id: 0
     };
     await this.productoService.agregarLavanderia(p);
     await this.actualizar();
     this.nombre_prenda = '';
     this.cantidad = 1;
-    this.roperia_id = 1;
+    // this.roperia_id = 1;
   }
   
   

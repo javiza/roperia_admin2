@@ -1,0 +1,114 @@
+.contenedor {
+    max-width: 100%;
+    width: 100%;
+    margin: 0 auto;
+    padding: 16px;
+    background-color: white;
+  }
+  
+  .contenido {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: flex-start; /* Cambiado a 'flex-start' para alinear a la izquierda */
+    align-items: flex-start;
+  }
+  
+  /* Ajustamos el formulario */
+  .formulario {
+    flex: 1;
+    min-width: 400px;
+    max-width: 400px;
+    padding: 16px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    background-color: white;
+  }
+  
+  /* Ajustamos la lista */
+  .lista {
+    flex: 2;
+    min-width: 600px;
+    max-width: 800px;
+    padding: 16px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    background-color: white;
+  }
+  
+  /* Sección de Totales */
+  .totales {
+    flex: 1;
+    min-width: 600px;
+    max-width: 600px;
+    padding: 16px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    background-color: white;
+  }
+  
+  /* Ajuste de fila para los totales */
+  .fila-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  
+  /* Evitar que se dividan las palabras */
+  .nombre-prenda, .cantidad-total {
+    white-space: nowrap;
+  }
+  
+  /* Responsividad: en móviles se apilan */
+  @media (max-width: 800px) {
+    .contenido {
+      flex-direction: column;
+      align-items: center;
+    }
+    .lista, .totales {
+      min-width: 100%;
+    }
+  }
+  
+  /* Estilo para la lista de productos */
+  .producto-item {
+    padding: 10px;
+  }
+  
+  .producto-grid {
+    display: grid;
+    grid-template-columns: 2fr 3fr 1fr auto;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+  
+  .producto-nombre, .producto-descripcion, .producto-cantidad {
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  /* Estilo para los botones */
+  .botones {
+    display: flex;
+    gap: 10px;
+  }
+  
+  /* Modal ajustes */
+  ion-modal {
+    --min-height: 80%;
+    --max-height: 80%;
+    --border-radius: 10px;
+  }
+  
+  ion-content {
+    padding: 20px;
+  }
+  
+  ion-button {
+    margin-top: 20px;
+  }
+  

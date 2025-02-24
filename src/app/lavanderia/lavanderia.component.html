@@ -12,9 +12,9 @@
            <ion-label position="floating">Cantidad</ion-label>
            <ion-input [(ngModel)]="cantidad" name="cantidad" type="number" required></ion-input>
         </ion-item>
-        <select [(ngModel)]="roperia_id" name="roperia_id">
+        <!-- <select [(ngModel)]="roperia_id" name="roperia_id">
           <option *ngFor="let producto of productos" [value]="producto.id">{{ producto.nombre_prenda }}</option>
-        </select>
+        </select> -->
         
         
       </ion-list>
@@ -23,7 +23,7 @@
   </div>
 </div>
 <div class="container">
- <h3>lista de ropa</h3> 
+ <h3>ropa ingresada recientemente</h3> 
   <ion-list>
     <ion-item *ngFor="let producto of productos">
       <ion-label>Nombre</ion-label>

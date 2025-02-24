@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Producto } from '../modelo/producto';
-import { IonButton, IonItem, IonLabel, IonInput, IonList } from '@ionic/angular/standalone';
+import { IonButton, IonItem, IonLabel, IonInput, IonList, IonContent, IonButtons,
+  IonToolbar, IonTitle, IonHeader, IonModal } from '@ionic/angular/standalone';
 import { DbService } from '../servicios/db.service';
 import { ProductoService } from '../servicios/producto.service';
 import { FormsModule } from '@angular/forms';
@@ -11,15 +12,20 @@ import { CommonModule } from '@angular/common';
   templateUrl: './lista.component.html',
   styleUrls: ['./lista.component.scss'],
   standalone: true,
-  imports: [IonButton, IonItem, IonLabel, IonInput, IonList, FormsModule, CommonModule]
+  imports: [IonHeader, IonTitle, IonButtons, IonButton, IonItem, IonInput, IonToolbar
+    ,IonList, FormsModule, CommonModule, IonContent, IonModal]
 })
 export class ListaComponent implements OnInit, OnDestroy {
   productos: Producto[] = [];
- 
   nombre: string = '';
   descripcion: string = '';
   cantidad: number = 0;
- 
+  isEditing: boolean = false;  // Nueva variable de estado para la edición
+  productoEditando: Producto | null = null; // Producto que estamos editando
+ // En ListaComponent, actualiza la definición de totalPorPrenda
+  totalPorPrenda: { [key: string]: { nombre: string, descripcion: string, cantidad: number } } = {};
+
+  modalOpen: boolean = false;  // Estado del modal
 
   constructor(
     private dbService: DbService,
@@ -30,7 +36,7 @@ export class ListaComponent implements OnInit, OnDestroy {
     console.log("ListaComponent::ngOnInit - DbService::iniciarPlugin()");
     await this.dbService.iniciarPlugin();
     const productos = await this.dbService.obtenerTodos();
-    console.log(productos)
+    console.log(productos);
     await this.actualizar();
   }
 
@@ -52,30 +58,78 @@ export class ListaComponent implements OnInit, OnDestroy {
   async actualizar() {
     console.log("actualizando...");
     this.productos = await this.productoService.getProductos();
+    
+    // Agrupar y sumar cantidades por nombre, manteniendo la descripción
+    this.totalPorPrenda = this.productos.reduce((acc, producto) => {
+      if (!acc[producto.nombre]) {
+        acc[producto.nombre] = {
+          nombre: producto.nombre,
+          descripcion: producto.descripcion,
+          cantidad: 0
+        };
+      }
+      acc[producto.nombre].cantidad += producto.cantidad; // Sumar cantidades
+      return acc;
+    }, {} as { [key: string]: { nombre: string, descripcion: string, cantidad: number } });
   }
+  
 
   async agregarProducto() {
-    const p: Producto = {
-      nombre: this.nombre,
-      descripcion: this.descripcion,
-      cantidad: this.cantidad
-    };
-    await this.productoService.agregarProducto(p);
+    let p: Producto;
+
+    if (this.isEditing && this.productoEditando) {
+      // Si estamos editando, actualizamos el producto
+      p = {
+        ...this.productoEditando,
+        nombre: this.nombre,
+        descripcion: this.descripcion,
+        cantidad: this.cantidad
+      };
+      await this.productoService.editar(p);  // Editar producto
+    } else {
+      // Si no estamos editando, creamos un nuevo producto
+      p = {
+        nombre: this.nombre,
+        descripcion: this.descripcion,
+        cantidad: this.cantidad
+      };
+      await this.productoService.agregarProducto(p);  // Agregar nuevo producto
+    }
+
+    // Actualizar la lista y limpiar el formulario
     await this.actualizar();
     this.nombre = '';
     this.descripcion = '';
     this.cantidad = 0;
-    
+    this.isEditing = false;  // Restablecer el estado de edición
+    this.productoEditando = null;  // Restablecer el producto en edición
   }
 
   async onProductoChange(p: Producto) {
-    await this.productoService.editar(p);
-    await this.actualizar();
+    this.isEditing = true;  // Marcamos que estamos editando
+    this.productoEditando = p;  // Guardamos el producto que estamos editando
+    this.nombre = p.nombre;  // Llenamos los campos del formulario
+    this.descripcion = p.descripcion;
+    this.cantidad = p.cantidad;
   }
-  
 
   async eliminarProducto(id: number) {
-    await this.productoService.eliminar(id); // Ahora esto está correcto
-    await this.actualizar(); // Actualiza la lista después de eliminar
+    await this.productoService.eliminar(id);  // Eliminar producto
+    await this.actualizar();  // Actualizar la lista después de eliminar
+  }
+
+  // Función para abrir el modal
+  abrirModal() {
+    this.modalOpen = true;
+  }
+
+  // Función para cerrar el modal
+  cerrarModal() {
+    this.modalOpen = false;
+  }
+
+  // Función para imprimir (simple ejemplo)
+  imprimir() {
+    window.print();
   }
 }
