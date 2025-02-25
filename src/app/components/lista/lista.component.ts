@@ -1,9 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Producto } from '../modelo/producto';
+import { Producto } from '../../modelo/producto';
 import { IonButton, IonItem, IonLabel, IonInput, IonList, IonContent, IonButtons,
   IonToolbar, IonTitle, IonHeader, IonModal } from '@ionic/angular/standalone';
-import { DbService } from '../servicios/db.service';
-import { ProductoService } from '../servicios/producto.service';
+import { DbService } from '../../servicios/db.service';
+import { ProductoService } from '../../servicios/producto.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
