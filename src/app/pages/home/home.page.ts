@@ -1,20 +1,32 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/angular/standalone';
+import { FormularioInicioComponent } from '../../components/formulario-inicio/formulario-inicio.component'
+import { RouterModule } from '@angular/router'
+import { addIcons } from 'ionicons'
+import { settingsOutline } from 'ionicons/icons'
+
 
 @Component({
   selector: 'app-home',
-  templateUrl: './home.page.html',
-  styleUrls: ['./home.page.scss'],
+  templateUrl: 'home.page.html',
+  styleUrls: ['home.page.scss'],
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule]
+  imports: [RouterModule, IonHeader, IonToolbar, IonTitle, IonContent, FormularioInicioComponent],
 })
 export class HomePage implements OnInit {
 
-  constructor() { }
+  @ViewChild(FormularioInicioComponent) formulario!:FormularioInicioComponent
 
-  ngOnInit() {
+  constructor() {
+    addIcons({
+      settingsOutline
+    })
   }
-
+  ngOnInit(): void {
+    console.log("HomePage::ngOnInit")
+  }
+  
+  ionViewWillEnter(): void {
+    console.log("HomePage::ionViewWillEnter");
+  }
 }

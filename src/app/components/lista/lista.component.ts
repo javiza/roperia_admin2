@@ -12,8 +12,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './lista.component.html',
   styleUrls: ['./lista.component.scss'],
   standalone: true,
-  imports: [IonHeader, IonTitle, IonButtons, IonButton, IonItem, IonInput, IonToolbar
-    ,IonList, FormsModule, CommonModule, IonContent, IonModal]
+  imports: [IonButton, IonItem, IonInput, IonList, FormsModule, CommonModule]
 })
 export class ListaComponent implements OnInit, OnDestroy {
   productos: Producto[] = [];

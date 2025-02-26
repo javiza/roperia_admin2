@@ -8,10 +8,11 @@ import { Capacitor } from '@capacitor/core';
 })
 export class DbService {
 
-  private sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite);
+  private sqlite!: SQLiteConnection;
   private db!: SQLiteDBConnection;
   platform: string = "";
   iniciado: boolean = false;
+ 
 
   private readonly DB_NAME = "gestion_roperia";
   private readonly DB_VERSION = 1;
@@ -180,14 +181,23 @@ export class DbService {
     const sql = `INSERT INTO ${this.DB_TABLE_FUNCIONARIO} (nombre_funcionario, nombre_prenda, roperia_id) VALUES (?, ?, ?)`;
     await this.db.run(sql, [nombre_funcionario, nombre_prenda, roperia_id]);
   }
-  async insertarUsuario(nombre_usuario: string, rut: string, password: string, roperia_id: number) {
-    const sql = `INSERT INTO ${this.DB_TABLE_USUARIO} (nombre_usuario, rut, password, roperia_id) VALUES (?, ?, ?,?)`;
-    await this.db.run(sql, [nombre_usuario, rut, password, roperia_id]);
-  }
+  
   async insertarAdmin(nombre_admin: string, rut: string, password: string,) {
     const sql = `INSERT INTO ${this.DB_TABLE_ADMIN} (nombre_admin, rut, password) VALUES (?, ?,?)`;
     await this.db.run(sql, [nombre_admin, rut, password]);
   }
+  //usuario:
+  async getUsuarioPorRut(rut: string): Promise<any> {
+    const sql = `SELECT * FROM usuario WHERE rut = ? LIMIT 1`;
+    const resultado = (await this.db.query(sql, [rut])).values ?? []; // Si es undefined, asigna []
+  
+    return resultado.length > 0 ? resultado[0] : null;
+  }
+  async insertarUsuario(nombre_usuario: string, rut: string, password: string, roperia_id: number) {
+    const sql = `INSERT INTO ${this.DB_TABLE_USUARIO} (nombre_usuario, rut, password, roperia_id) VALUES (?, ?, ?, ?)`;
+    await this.db.run(sql, [nombre_usuario, rut, password, roperia_id]);
+  }
+  
 
 }
 
