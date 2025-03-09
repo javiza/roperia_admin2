@@ -1,10 +1,10 @@
+import { Usuario } from './../../modelo/producto';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/angular/standalone';
-import { FormularioInicioComponent } from '../../components/formulario-inicio/formulario-inicio.component'
-import { RouterModule } from '@angular/router'
-import { addIcons } from 'ionicons'
-import { settingsOutline } from 'ionicons/icons'
-
+import { FormularioInicioComponent } from '../../components/formulario-inicio/formulario-inicio.component';
+import { RouterModule } from '@angular/router';
+import { addIcons } from 'ionicons';
+import { settingsOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-home',
@@ -15,15 +15,16 @@ import { settingsOutline } from 'ionicons/icons'
 })
 export class HomePage implements OnInit {
 
-  @ViewChild(FormularioInicioComponent) formulario!:FormularioInicioComponent
+  @ViewChild(FormularioInicioComponent) formulario!:FormularioInicioComponent;
 
   constructor() {
     addIcons({
       settingsOutline
-    })
+    });
   }
+
   ngOnInit(): void {
-    console.log("HomePage::ngOnInit")
+    console.log("HomePage::ngOnInit");
   }
   
   ionViewWillEnter(): void {

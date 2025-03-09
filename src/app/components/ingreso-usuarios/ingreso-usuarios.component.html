@@ -1,0 +1,35 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Ingresar Usuario</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <form [formGroup]="ingresarUsuarioForm" (ngSubmit)="onSubmit()">
+    <ion-item>
+      <ion-input label="Nombre" formControlName="nombre"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input label="RUT" formControlName="rut"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input label="Contraseña" type="password" formControlName="password"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input label="Repetir Contraseña" type="password" formControlName="repetirPassword"></ion-input>
+    </ion-item>
+    <ion-button expand="full" type="submit">Ingresar Usuario</ion-button>
+  </form>
+
+  <ion-list>
+    <ion-item *ngFor="let usuario of usuarios">
+      <ion-label>
+        <h2>{{ usuario.nombre_usuario }}</h2>
+        <p>{{ usuario.rut }}</p>
+        <p>{{ usuario.password }}</p>
+      </ion-label>
+      <ion-button (click)="editarUsuario(usuario)">Editar</ion-button>
+      <ion-button color="danger" (click)="eliminarUsuario(usuario.id)">Eliminar</ion-button>
+    </ion-item>
+  </ion-list>
+</ion-content>

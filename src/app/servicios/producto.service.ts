@@ -66,5 +66,11 @@ export class ProductoService {
   async agregarAdmin(nombre_admin: string, rut: string, password: string) {
     await this.dbService.insertarAdmin(nombre_admin, rut, password);
   }
+  async getUsuarios(): Promise<any[]> {
+        return this.dbService.obtenerTodosUsuarios();
+      }
+  async eliminarUsuario(id: number) {
+       await this.dbService.eliminarUsuario(id);
+       }
 }
 

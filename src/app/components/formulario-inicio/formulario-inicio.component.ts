@@ -3,22 +3,19 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { AuthService } from 'src/app/servicios/auth.service';
 import { NavController } from '@ionic/angular';
 import { DbService } from 'src/app/servicios/db.service';
-import { IonHeader, IonButton, IonText, IonItem, IonInput, IonLabel, IonTitle, 
-  IonToolbar, IonContent } from "@ionic/angular/standalone";
+import { CommonModule } from '@angular/common';
+import { IonHeader, IonButton, IonText, IonItem, IonInput, IonLabel, IonTitle, IonToolbar, IonContent } from "@ionic/angular/standalone";
 
 @Component({
   selector: 'app-formulario-inicio',
   templateUrl: './formulario-inicio.component.html',
   styleUrls: ['./formulario-inicio.component.scss'],
   standalone: true,
-  imports: [IonButton, IonText, IonItem, IonInput, IonLabel, IonTitle, IonToolbar, IonContent,
-    IonHeader, ReactiveFormsModule
-   ]
+  imports: [CommonModule, IonButton, IonText, IonItem, IonInput, IonTitle, IonToolbar, IonContent, IonHeader, ReactiveFormsModule]
 })
 export class FormularioInicioComponent implements OnInit {
   loginForm: FormGroup;
   errorMessage: string = '';
-  isRegisterMode: boolean = false; // Modo para alternar entre login y registro
 
   constructor(
     private fb: FormBuilder,
@@ -27,10 +24,8 @@ export class FormularioInicioComponent implements OnInit {
     private navCtrl: NavController
   ) {
     this.loginForm = this.fb.group({
-      nombre_usuario: [''], // Campo solo en registro
       rut: ['', [Validators.required]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: [''] // Campo solo en registro
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
@@ -38,39 +33,16 @@ export class FormularioInicioComponent implements OnInit {
 
   async onSubmit() {
     if (this.loginForm.valid) {
-      const { nombre_usuario, rut, password, confirmPassword } = this.loginForm.value;
-
-      if (this.isRegisterMode) {
-        // Modo Registro
-        if (password !== confirmPassword) {
-          this.errorMessage = "Las contraseñas no coinciden";
-          return;
-        }
-
-        try {
-          await this.dbService.insertarUsuario(nombre_usuario, rut, password, 1); // 1 como ID de ropería por defecto
-          alert("Usuario registrado con éxito");
-          this.toggleMode(); // Volver al modo login
-        } catch (error) {
-          this.errorMessage = "Error al registrar usuario";
-          console.error(error);
-        }
+      const { rut, password } = this.loginForm.value;
+  
+      const result = await this.authService.login(rut, password);
+      if (result) {
+        console.log('Inicio de sesión exitoso', result);
+        this.navCtrl.navigateRoot('/usuario'); // Redirigir correctamente
       } else {
-        // Modo Inicio de Sesión
-        const result = await this.authService.login(rut, password);
-        if (result) {
-          console.log('Inicio de sesión exitoso', result);
-          this.navCtrl.navigateRoot('/pages/usuario');
-        } else {
-          this.errorMessage = 'Rut o contraseña incorrectos';
-        }
+        this.errorMessage = 'Rut o contraseña incorrectos';
       }
     }
   }
-
-  toggleMode() {
-    this.isRegisterMode = !this.isRegisterMode;
-    this.errorMessage = ''; // Limpiar errores al cambiar de modo
-    this.loginForm.reset(); // Resetear formulario
-  }
+  
 }

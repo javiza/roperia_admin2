@@ -1,3 +1,24 @@
-ion-card {
-    margin: 20px;
+.contenedor {
+    height: 100%;
+    width: 100%;
+    margin: 0 auto;
+    padding: 16px;
+    background-color: white;
+  }
+  
+  .contenido {
+    display: flex;
+    flex-wrap: wrap;
+    // gap: 20px;
+    justify-content: flex-start; /* Cambiado a 'flex-start' para alinear a la izquierda */
+    align-items: flex-start;
+  }
+  .formulario {
+    flex: 1;
+    min-width: 400px;
+    max-width: 400px;
+    padding: 16px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    background-color: white;
   }

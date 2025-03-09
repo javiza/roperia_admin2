@@ -1,55 +1,18 @@
-<ion-header>
+<ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>{{ isRegisterMode ? 'Registro de Usuario' : 'Iniciar Sesión' }}</ion-title>
+    <ion-title>Inicio de Sesión</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content [fullscreen]="true">
   <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-    <!-- Nombre de usuario (Solo en registro) -->
-    <ion-item *ngIf="isRegisterMode">
-      <ion-label position="floating">Nombre</ion-label>
-      <ion-input type="text" formControlName="nombre_usuario"></ion-input>
-    </ion-item>
-
-    <!-- RUT -->
     <ion-item>
-      <ion-label position="floating">RUT</ion-label>
-      <ion-input type="text" formControlName="rut"></ion-input>
+      <ion-input label="RUT" formControlName="rut"></ion-input>
     </ion-item>
-    <ion-text color="danger" *ngIf="loginForm.get('rut')?.invalid && loginForm.get('rut')?.touched">
-      Ingresa un RUT válido.
-    </ion-text>
-
-    <!-- Contraseña -->
     <ion-item>
-      <ion-label position="floating">Contraseña</ion-label>
-      <ion-input type="password" formControlName="password"></ion-input>
+      <ion-input label="Contraseña" type="password" formControlName="password"></ion-input>
     </ion-item>
-    <ion-text color="danger" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
-      La contraseña debe tener al menos 6 caracteres.
-    </ion-text>
-
-    <!-- Confirmar contraseña (Solo en registro) -->
-    <ion-item *ngIf="isRegisterMode">
-      <ion-label position="floating">Confirmar Contraseña</ion-label>
-      <ion-input type="password" formControlName="confirmPassword"></ion-input>
-    </ion-item>
-    <ion-text color="danger" *ngIf="isRegisterMode && loginForm.get('confirmPassword')?.touched && loginForm.get('confirmPassword')?.value !== loginForm.get('password')?.value">
-      Las contraseñas no coinciden.
-    </ion-text>
-
-    <!-- Botón de acción -->
-    <ion-button expand="full" type="submit" [disabled]="loginForm.invalid">
-      {{ isRegisterMode ? 'Registrar' : 'Iniciar Sesión' }}
-    </ion-button>
-
-    <!-- Mensaje de error -->
+    <ion-button expand="full" type="submit">Iniciar Sesión</ion-button>
     <ion-text color="danger" *ngIf="errorMessage">{{ errorMessage }}</ion-text>
   </form>
-
-  <!-- Cambiar entre login y registro -->
-  <ion-button fill="clear" (click)="toggleMode()">
-    {{ isRegisterMode ? '¿Ya tienes una cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate' }}
-  </ion-button>
 </ion-content>
