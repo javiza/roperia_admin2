@@ -42,6 +42,7 @@ export class ProductoService {
   async agregarLavanderia(producto: Lavanderia) {
     await this.dbService.insertarRopaLavanderia(producto);
   }
+  
   async eliminarLavanderia(id: number) {
     if (id !== undefined && id > 0) {
       await this.dbService.eliminarLavanderia(id);
@@ -60,8 +61,8 @@ export class ProductoService {
   async agregarFuncionario(nombre_funcionario: string, nombre_prenda: string, roperia_id: number) {
     await this.dbService.insertarFuncionario(nombre_funcionario, nombre_prenda, roperia_id);
   }
-  async agregarUsuario(nombre_usuario: string, rut: string, password: string, roperia_id: number) {
-    await this.dbService.insertarUsuario(nombre_usuario, rut, password, roperia_id);
+  async agregarUsuario(nombre_usuario: string, rut: string, password: string) {
+    await this.dbService.insertarUsuario(nombre_usuario, rut, password);
   }
   async agregarAdmin(nombre_admin: string, rut: string, password: string) {
     await this.dbService.insertarAdmin(nombre_admin, rut, password);

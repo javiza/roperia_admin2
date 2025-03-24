@@ -6,8 +6,7 @@ import { ListaComponent } from '../../components/lista/lista.component'
 import { RouterModule } from '@angular/router'
 import { addIcons } from 'ionicons'
 import { settingsOutline } from 'ionicons/icons'
-import { LavanderiaComponent } from '../../components/lavanderia/lavanderia.component';
-
+// import { LavanderiaComponent } from '../../components/lavanderia/lavanderia.component';
 @Component({
   selector: 'app-usuario',
   templateUrl: 'usuario.page.html',
@@ -18,7 +17,7 @@ import { LavanderiaComponent } from '../../components/lavanderia/lavanderia.comp
 export class UsuarioPage implements OnInit {
 
   @ViewChild(ListaComponent) lista!:ListaComponent
-  @ViewChild(LavanderiaComponent) lavanderia!:LavanderiaComponent
+  // @ViewChild(LavanderiaComponent) lavanderia!:LavanderiaComponent
   constructor() {
     addIcons({
       settingsOutline
@@ -30,6 +29,6 @@ export class UsuarioPage implements OnInit {
   ionViewWillEnter():void {
     console.log("UsuarioPage::ionViewWillEnter")
     this.lista.ionViewWillEnter() 
-    this.lavanderia.ionViewWillEnter()
+    // this.lavanderia.ionViewWillEnter()
   }
 }

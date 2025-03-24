@@ -27,8 +27,21 @@ export class IngresoUsuariosComponent implements OnInit {
 
   async ngOnInit() {
     await this.dbService.iniciarPlugin();
+
+    // Depurar tablas para verificar su contenido
+    await this.dbService.depurarTablas();
+
+    // Verificar si hay roperías en la base de datos
+    const roperia = await this.dbService.getRoperiaId();
+    if (!roperia) {
+        console.error("No hay ropería disponible. No se puede continuar.");
+        return;
+    }
+    console.log("🛠️ Ropería encontrada:", roperia);
+
     this.cargarUsuarios();
-  }
+}
+  
 
   validarRutChileno(control: AbstractControl): { [key: string]: boolean } | null {
     const rut = control.value;
@@ -47,12 +60,22 @@ export class IngresoUsuariosComponent implements OnInit {
 
   async onSubmit() {
     if (this.ingresarUsuarioForm.valid) {
-      const { nombre, rut, password } = this.ingresarUsuarioForm.value;
-      console.log('Usuario ingresado:', { nombre, rut, password });
-      await this.productoService.agregarUsuario(nombre, rut, password, 1); // Aquí puedes ajustar el roperia_id según sea necesario
-      this.cargarUsuarios();
+        const { nombre, rut, password } = this.ingresarUsuarioForm.value;
+
+        // Obtener un roperia_id válido desde la base de datos
+        const roperia = await this.dbService.getRoperiaId();
+        if (!roperia) {
+            console.error("No hay ropería disponible. No se puede agregar el usuario.");
+            return;
+        }
+
+        console.log('Usuario ingresado:', { nombre, rut, password });
+
+        await this.productoService.agregarUsuario(nombre, rut, password);
+        this.cargarUsuarios();
     }
-  }
+}
+  
 
   async cargarUsuarios() {
     this.usuarios = await this.productoService.getUsuarios();
