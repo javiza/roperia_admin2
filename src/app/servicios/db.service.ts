@@ -149,7 +149,7 @@ export class DbService {
             if (!usuarioId) {
                 throw new Error("No se pudo encontrar un usuario para asociar con la ropería.");
             }
-            await this.db.run(`INSERT INTO ${this.DB_TABLE_ROPERIA} (nombre, descripcion, cantidad, usuario_id) VALUES ('Ropería Central', 'Ropa hospitalaria', 100, ?)`, [usuarioId]);
+            await this.db.run(`INSERT INTO ${this.DB_TABLE_ROPERIA} (nombre, descripcion, cantidad, usuario_id) VALUES ('Sabanas', 'blancas con logo', 1500, ?)`, [usuarioId]);
         }
 
         if (this.platform === "web") {
