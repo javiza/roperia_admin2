@@ -1,18 +1,86 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>Inicio de Sesión</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content class="ion-padding fondo">
 
-<ion-content [fullscreen]="true">
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-    <ion-item>
-      <ion-input label="RUT" formControlName="rut"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-input label="Contraseña" type="password" formControlName="password"></ion-input>
-    </ion-item>
-    <ion-button expand="full" type="submit">Iniciar Sesión</ion-button>
-    <ion-text color="danger" *ngIf="errorMessage">{{ errorMessage }}</ion-text>
-  </form>
+  <!-- Encabezado -->
+  <div class="titulo-usuarios">
+    <h2>Usuarios</h2>
+  </div>
+
+  <!-- Caja de login -->
+  <div class="login-card">
+    <h1 class="titulo">Inicio Sesión</h1>
+    <p class="subtitulo">Ingresa tu RUT, contraseña y selecciona tu rol</p>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <!-- Campo RUT -->
+      <ion-item>
+  <ion-input
+    type="text"
+    formControlName="rut"
+    placeholder="Ej: 12345678-9"
+    label="RUT"
+    label-placement="floating">
+  </ion-input>
+</ion-item>
+      <ion-text color="danger" *ngIf="loginForm.get('rut')?.invalid && loginForm.get('rut')?.touched">
+        <small>Ingrese un RUT válido</small>
+      </ion-text>
+
+      <!-- Campo Password -->
+      <ion-item>
+  <ion-input
+    type="password"
+    formControlName="password"
+    placeholder="••••••••"
+    label="Contraseña"
+    label-placement="floating">
+  </ion-input>
+</ion-item>
+
+      <ion-text color="danger" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+        <small>La contraseña debe tener al menos 6 caracteres</small>
+      </ion-text>
+
+      <!-- Selector de rol -->
+      <ion-item>
+        <ion-label>Rol</ion-label>
+        <ion-segment formControlName="role">
+          <ion-segment-button value="admin">
+            Admin
+          </ion-segment-button>
+          <ion-segment-button value="usuario">
+            Usuario
+          </ion-segment-button>
+        </ion-segment>
+      </ion-item>
+      <ion-text color="danger" *ngIf="loginForm.get('role')?.invalid && loginForm.get('role')?.touched">
+        <small>Selecciona un rol</small>
+      </ion-text>
+
+      <!-- Mensaje de error general -->
+      <ion-text color="danger" *ngIf="errorMessage">
+        <p>{{ errorMessage }}</p>
+      </ion-text>
+
+      <!-- Spinner de carga -->
+      <div *ngIf="loading" class="spinner-container">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
+
+      <!-- Botón de ingreso -->
+      <ion-button expand="block" type="submit" [disabled]="loginForm.invalid || loading" class="ion-margin-top">
+        Log in
+      </ion-button>
+    </form>
+  </div>
+
+ 
+
 </ion-content>
+
+<style>
+  .spinner-container {
+    display: flex;
+    justify-content: center;
+    margin: 15px 0;
+  }
+</style>

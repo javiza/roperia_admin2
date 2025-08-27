@@ -1,15 +1,46 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>administrador</ion-title>
+    <ion-title>Administrador</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()">Salir</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-toolbar color="primary">
+    <ion-segment [(ngModel)]="activeSegment" scrollable>
+      <ion-segment-button value="home">Home</ion-segment-button>
+      <ion-segment-button value="ingresos">Ingresos</ion-segment-button>
+      <ion-segment-button value="unidad">Unidad</ion-segment-button>
+      <ion-segment-button value="lavanderia">Lavandería</ion-segment-button>
+      <ion-segment-button value="bajas">Bajas y reparaciones</ion-segment-button>
+      <ion-segment-button value="inventarios">Inventarios</ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+   <ion-toolbar color="tertiary" *ngIf="activeSegment">
+    <div style="display:flex; gap:10px; padding: 0 10px; font-size: 0.9em;">
+      <span *ngIf="activeSegment==='home'">Inicio</span>
+      <span *ngIf="activeSegment==='ingresos'">Inicio</span>
+      <span *ngIf="activeSegment==='unidad'">Pendientes</span>
+      <span *ngIf="activeSegment==='lavanderia'">Lavandería</span>
+      <span *ngIf="activeSegment==='bajas'">Bajas</span>
+      <span *ngIf="activeSegment==='inventarios'">Inventarios</span>
+    </div>
   </ion-toolbar>
 </ion-header>
-
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">administrador</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <!-- Aquí va el contenido según activeSegment -->
+  <div *ngIf="activeSegment==='lavanderia'">
+    <!-- Contenido de lavandería -->
+  </div>
 
-  <app-ingreso-usuarios></app-ingreso-usuarios>
+  <div class="footer">
+    <p>
+      © 2025 Jonathan Bustos Ramos TODOS LOS DERECHOS RESERVADOS <br>
+      Sistema de Gestión de Lavandería y Ropería - Versión 1.0
+    </p>
+  </div>
 </ion-content>
+  
+
+  <!-- <app-ingreso-usuarios></app-ingreso-usuarios> -->
+

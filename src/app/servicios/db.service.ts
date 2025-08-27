@@ -1,327 +1,383 @@
 import { Injectable } from '@angular/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
-import { Lavanderia, Producto } from '../modelo/producto';
 import { Capacitor } from '@capacitor/core';
-import * as bcrypt from 'bcryptjs';
+import { Roperia, Prenda, Lavanderia, Lavado, Unidad, Unidad_retorno, Bajas } from '../modelo/producto';
+
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DbService {
-
   private sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite);
   private db!: SQLiteDBConnection;
-  platform: string = "";
-  iniciado: boolean = false;
+  public platform: string = '';
+  public iniciado: boolean = false;
 
-  private readonly DB_NAME = "adminRopa";
+  // Configuración DB
+  private readonly DB_NAME = 'adminRopa';
   private readonly DB_VERSION = 1;
   private readonly DB_ENCRYPTION = false;
-  private readonly DB_MODE = "no-encryption";
+  private readonly DB_MODE = 'no-encryption';
   private readonly DB_READ_ONLY = false;
 
-  private readonly DB_TABLE_USUARIO = "usuario";
-  private readonly DB_TABLE_ROPERIA = "roperia";
-  private readonly DB_TABLE_LAVANDERIA = "lavanderia";
-  private readonly DB_TABLE_UNIDAD = "unidad";
-  private readonly DB_TABLE_BAJAS = "bajas";
-  private readonly DB_TABLE_FUNCIONARIO = "funcionario";
-  private readonly DB_TABLE_ADMIN = "administrador";
-  
-
-  private readonly DB_SQL_TABLES = `
-   CREATE TABLE IF NOT EXISTS ${this.DB_TABLE_USUARIO} (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre_usuario TEXT NOT NULL,
-    rut TEXT NOT NULL,
-    password TEXT NOT NULL
-  );
-  CREATE TABLE IF NOT EXISTS ${this.DB_TABLE_ROPERIA} (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT NOT NULL,
-    descripcion TEXT NOT NULL,
-    cantidad INTEGER NOT NULL,
-    usuario_id INTEGER NOT NULL,
-    FOREIGN KEY (usuario_id) REFERENCES ${this.DB_TABLE_USUARIO} (id) ON DELETE CASCADE
-  );
-
-  CREATE TABLE IF NOT EXISTS ${this.DB_TABLE_LAVANDERIA} (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre_prenda TEXT NOT NULL,
-    cantidad INTEGER NOT NULL,
-    roperia_id INTEGER NOT NULL,
-    usuario_id INTEGER NOT NULL,
-    FOREIGN KEY (roperia_id) REFERENCES ${this.DB_TABLE_ROPERIA} (id) ON DELETE CASCADE,
-     FOREIGN KEY (usuario_id) REFERENCES ${this.DB_TABLE_USUARIO} (id) ON DELETE CASCADE
-  );
-
-  CREATE TABLE IF NOT EXISTS ${this.DB_TABLE_UNIDAD} (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre_prenda TEXT NOT NULL,
-    cantidad INTEGER NOT NULL,
-    roperia_id INTEGER NOT NULL,
-    usuario_id INTEGER NOT NULL,
-    FOREIGN KEY (roperia_id) REFERENCES ${this.DB_TABLE_ROPERIA} (id) ON DELETE CASCADE,
-    FOREIGN KEY (usuario_id) REFERENCES ${this.DB_TABLE_USUARIO} (id) ON DELETE CASCADE
-  );
-
-  CREATE TABLE IF NOT EXISTS ${this.DB_TABLE_BAJAS} (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre_prenda TEXT NOT NULL,
-    cantidad INTEGER NOT NULL,
-    roperia_id INTEGER NOT NULL,
-    usuario_id INTEGER NOT NULL,
-    FOREIGN KEY (roperia_id) REFERENCES ${this.DB_TABLE_ROPERIA} (id) ON DELETE CASCADE,
-    FOREIGN KEY (usuario_id) REFERENCES ${this.DB_TABLE_USUARIO} (id) ON DELETE CASCADE
-  );
-
-  CREATE TABLE IF NOT EXISTS ${this.DB_TABLE_FUNCIONARIO} (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre_funcionario TEXT NOT NULL,
-    nombre_prenda TEXT NOT NULL,
-    cantidad INTEGER NOT NULL,
-    roperia_id INTEGER NOT NULL,
-    FOREIGN KEY (roperia_id) REFERENCES ${this.DB_TABLE_ROPERIA} (id) ON DELETE CASCADE
-  );
-
-  CREATE TABLE IF NOT EXISTS ${this.DB_TABLE_ADMIN} (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre_admin TEXT NOT NULL,
-    rut TEXT NOT NULL,
-    password TEXT NOT NULL
-  );
-
- 
-`;
-
+  // Tablas
+  private readonly DB_TABLE_ROPERIA = 'roperia';
+  private readonly DB_TABLE_PRENDA = 'prenda';
+  private readonly DB_TABLE_LAVANDERIA = 'lavanderia';
+  private readonly DB_TABLE_LAVADO = 'lavado';
+  private readonly DB_TABLE_UNIDAD = 'unidad';
+  private readonly DB_TABLE_UNIDAD_RETORNO = 'unidad_retorno';
+  private readonly DB_TABLE_UNIDAD_RSUCIAS = 'unidad_resucias';
+  private readonly DB_TABLE_BAJAS = 'bajas';
+  private readonly DB_TABLE_REPARACIONES = 'reparaciones';
 
   constructor() {}
 
-  async iniciarPlugin() {
+  //#region Inicialización y conexión
+  async iniciarPlugin(): Promise<void> {
     try {
-        this.platform = Capacitor.getPlatform();
+      this.platform = Capacitor.getPlatform();
 
-        if (!this.sqlite) {
-            console.error("🚨 SQLite no está inicializado correctamente.");
-            return;
-        }
-
-        if (this.platform === "web") {
-            await customElements.whenDefined('jeep-sqlite');
-            const jeepSqliteEl = document.querySelector('jeep-sqlite');
-            if (jeepSqliteEl) {
-                await this.sqlite.initWebStore();
-            }
-        }
-
-        console.log("🔹 Creando conexión con la base de datos...");
-        this.db = await this.sqlite.createConnection(this.DB_NAME, this.DB_ENCRYPTION, this.DB_MODE, this.DB_VERSION, this.DB_READ_ONLY);
-
-        const ret = await this.sqlite.checkConnectionsConsistency();
-        const isConn = (await this.sqlite.isConnection(this.DB_NAME, this.DB_READ_ONLY)).result;
-
-        if (ret.result && isConn) {
-            this.db = await this.sqlite.retrieveConnection(this.DB_NAME, this.DB_READ_ONLY);
-        } else {
-            this.db = await this.sqlite.createConnection(this.DB_NAME, this.DB_ENCRYPTION, this.DB_MODE, this.DB_VERSION, this.DB_READ_ONLY);
-        }
-
-        await this.db.open();
-        console.log("✅ Base de datos abierta correctamente.");
-
-        console.log("📌 Creando tablas...");
-        await this.db.execute(this.DB_SQL_TABLES).catch(err => {
-            console.error("🚨 Error creando tablas:", err);
-        });
-
-        // Insertar un usuario por defecto si no existe
-        const usuario = await this.getUsuarioPorRut('12345678-9');
-        if (!usuario) {
-            console.log("No hay usuario. Creando uno por defecto...");
-            const hashedPassword = await bcrypt.hash('default_password', 10);
-            await this.db.run(`INSERT INTO ${this.DB_TABLE_USUARIO} (nombre_usuario, rut, password) VALUES ('Usuario Default', '12345678-9', ?)`, [hashedPassword]);
-        }
-
-        // Insertar una ropería por defecto si no existe
-        const roperia = await this.getRoperiaId();
-        if (!roperia) {
-            console.log("No hay ropería. Creando una por defecto...");
-            const usuarioId = (await this.db.query(`SELECT id FROM ${this.DB_TABLE_USUARIO} LIMIT 1`)).values?.[0]?.id;
-            if (!usuarioId) {
-                throw new Error("No se pudo encontrar un usuario para asociar con la ropería.");
-            }
-            await this.db.run(`INSERT INTO ${this.DB_TABLE_ROPERIA} (nombre, descripcion, cantidad, usuario_id) VALUES ('Sabanas', 'blancas con logo', 1500, ?)`, [usuarioId]);
-        }
-
-        if (this.platform === "web") {
-            await this.sqlite.saveToStore(this.DB_NAME);
-        }
-
-        this.iniciado = true;
-        console.log("🎉 Base de datos inicializada con éxito.");
-
-        // Llamar a depurarTablas para verificar el contenido de las tablas
-        await this.depurarTablas();
-    } catch (e) {
-        console.error("🚨 Error al inicializar la base de datos:", e);
-    }
-}
-
-  async cerrarConexion() {
-    await this.db.close();
-  }
-
-  async obtenerTodos(): Promise<Producto[]> {
-    const sql = `SELECT * FROM ${this.DB_TABLE_ROPERIA}`;
-    const resultado = (await this.db.query(sql)).values;
-    return resultado ?? [];
-  }
-  
-  async insertar(producto: Producto) {
-    const sql = `INSERT INTO ${this.DB_TABLE_ROPERIA} (nombre, descripcion, cantidad) VALUES (?,?,?)`;
-    await this.db.run(sql, [producto.nombre, producto.descripcion, producto.cantidad,]);
-  }
-
-  async actualizar(producto: Producto) {
-    const sql = `UPDATE ${this.DB_TABLE_ROPERIA} SET nombre = ?, descripcion = ?, cantidad = ? WHERE id = ?`;
-    await this.db.run(sql, [producto.nombre, producto.descripcion, producto.cantidad, producto.id]);
-  }
-
-  async eliminar(id: number) {
-    const sql = `DELETE FROM ${this.DB_TABLE_ROPERIA} WHERE id = ?`;
-    await this.db.run(sql, [id]);
-  }
- 
-  async insertarRopaLavanderia(producto: Lavanderia) {
-    const sql = `INSERT INTO ${this.DB_TABLE_LAVANDERIA} (nombre_prenda, cantidad, roperia_id) VALUES (?, ?, ?)`;
-    await this.db.run(sql, [producto.nombre_prenda, producto.cantidad, producto.roperia_id]);
-  }
-  async actualizarLavanderia(producto: Lavanderia) {
-    const sql = `UPDATE ${this.DB_TABLE_LAVANDERIA} SET nombre_prenda = ?, cantidad = ?, roperia_id = ? WHERE id = ?`;
-    await this.db.run(sql, [producto.nombre_prenda, producto.cantidad, producto.roperia_id, producto.id]);
-  }
-  
-  async obtenerTodosLavanderia(): Promise<Lavanderia[]> {
-    const sql = `SELECT * FROM ${this.DB_TABLE_LAVANDERIA}`;
-    const resultado = (await this.db.query(sql)).values;
-    return resultado ?? [];
-  }
-
-  async eliminarLavanderia(id: number) {
-    const sql = `DELETE FROM ${this.DB_TABLE_LAVANDERIA} WHERE id = ?`;
-    await this.db.run(sql, [id]);
-  }
-  async insertarRopaUnidad(nombre_prenda: string, cantidad: number, roperia_id: number) {
-    const sql = `INSERT INTO ${this.DB_TABLE_UNIDAD} (nombre_prenda, cantidad, roperia_id) VALUES (?, ?, ?)`;
-    await this.db.run(sql, [nombre_prenda, cantidad, roperia_id]);
-  }
-
-  async insertarBajas(nombre_prenda: string, cantidad: number, roperia_id: number) {
-    const sql = `INSERT INTO ${this.DB_TABLE_BAJAS} (nombre_prenda, cantidad, roperia_id) VALUES (?, ?, ?)`;
-    await this.db.run(sql, [nombre_prenda, cantidad, roperia_id]);
-  }
-
-  async insertarFuncionario(nombre_funcionario: string, nombre_prenda: string, roperia_id: number) {
-    const sql = `INSERT INTO ${this.DB_TABLE_FUNCIONARIO} (nombre_funcionario, nombre_prenda, roperia_id) VALUES (?, ?, ?)`;
-    await this.db.run(sql, [nombre_funcionario, nombre_prenda, roperia_id]);
-  }
-  async insertarUsuario(nombre_usuario: string, rut: string, password: string) {
-    try {
-        // Verificar si existe una ropería
-        let resultado = await this.db.query(`SELECT id FROM ${this.DB_TABLE_ROPERIA} LIMIT 1`);
-        let roperiaId: number;
-
-        if (!resultado.values || resultado.values.length === 0) {
-            // No hay ropería, creamos una por defecto
-            console.log("No hay ropería. Creando una por defecto...");
-            await this.db.run(`INSERT INTO ${this.DB_TABLE_ROPERIA} (nombre, descripcion, cantidad, usuario_id) VALUES ('Ropería Central', 'Ropa hospitalaria', 100, 1)`);
-
-            // Obtener el ID de la nueva ropería
-            resultado = await this.db.query(`SELECT id FROM ${this.DB_TABLE_ROPERIA} LIMIT 1`);
-        }
-
-        // Guardamos el ID de la ropería
-        roperiaId = resultado.values?.[0]?.id;
-
-        if (!roperiaId) {
-            throw new Error("No se pudo crear o encontrar una ropería.");
-        }
-
-        // Hashear la contraseña
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Insertar usuario con la ropería recién creada o existente
-        const sql = `INSERT INTO ${this.DB_TABLE_USUARIO} (nombre_usuario, rut, password) VALUES (?, ?, ?)`;
-        await this.db.run(sql, [nombre_usuario, rut, hashedPassword]);
-
-        console.log("✅ Usuario agregado correctamente con ropería asociada.");
-    } catch (error) {
-        console.error("🚨 Error al insertar usuario:", error);
-    }
-}
-  
-  async insertarAdmin(nombre_admin: string, rut: string, password: string,) {
-    const sql = `INSERT INTO ${this.DB_TABLE_ADMIN} (nombre_admin, rut, password) VALUES (?, ?,?)`;
-    await this.db.run(sql, [nombre_admin, rut, password]);
-  }
-  
-  async getUsuarioPorRut(rut: string): Promise<any> {
-  
-    try {
-      // 💡 Si this.db es undefined, inicializa la base de datos
-      if (!this.db) {
-        console.warn('⚠️ Base de datos no inicializada. Inicializando ahora...');
-        await this.iniciarPlugin(); // Asegura que la base de datos esté lista
+      if (!this.sqlite) {
+        console.error('🚨 SQLite no está inicializado correctamente.');
+        return;
       }
-  
-      const sql = `SELECT * FROM ${this.DB_TABLE_USUARIO} WHERE rut = ? LIMIT 1`;
-      const resultado = (await this.db.query(sql, [rut])).values ?? [];
+
+      // Inicialización para Web
+      if (this.platform === 'web') {
+        await customElements.whenDefined('jeep-sqlite');
+        const jeepEl = document.querySelector('jeep-sqlite');
+        if (jeepEl) {
+          await this.sqlite.initWebStore();
+        }
+      }
+
+      // Crear o recuperar conexión
+      const connExists = (await this.sqlite.isConnection(this.DB_NAME, this.DB_READ_ONLY)).result;
+      this.db = connExists
+        ? await this.sqlite.retrieveConnection(this.DB_NAME, this.DB_READ_ONLY)
+        : await this.sqlite.createConnection(this.DB_NAME, this.DB_ENCRYPTION, this.DB_MODE, this.DB_VERSION, this.DB_READ_ONLY);
+
+      await this.db.open();
+
+      // Crear tablas individualmente
+      await this.crearTablasIndividuales();
+
+      // Guardar en store web
+      if (this.platform === 'web') {
+        await this.sqlite.saveToStore(this.DB_NAME);
+      }
+
+      this.iniciado = true;
+      console.log('✅ Base de datos inicializada correctamente');
+
+    } catch (error) {
+      console.error('🚨 Error al inicializar la base de datos:', error);
+      this.iniciado = false;
+    }
+  }
+
+  async cerrarConexion(): Promise<void> {
+    try {
+      await this.db.close();
+      console.log('🔒 Conexión cerrada correctamente');
+    } catch (error) {
+      console.error('Error al cerrar la conexión:', error);
+    }
+  }
+ //#region Tablas Sqlite
+  private async crearTablasIndividuales(): Promise<void> {
+    const tablasSQL = [
+      `CREATE TABLE IF NOT EXISTS ${this.DB_TABLE_ROPERIA} (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre_encargado TEXT,
+        telefono TEXT,
+        email TEXT
+      );`,
+
+      `CREATE TABLE IF NOT EXISTS ${this.DB_TABLE_PRENDA} (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_roperia INTEGER,
+        nombre TEXT,
+        descripcion TEXT,
+        cantidad INTEGER,
+        tipo TEXT,
+        fecha_ingreso TEXT,
+        FOREIGN KEY (id_roperia) REFERENCES ${this.DB_TABLE_ROPERIA}(id)
+      );`,
+
+      `CREATE TABLE IF NOT EXISTS ${this.DB_TABLE_LAVANDERIA} (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_roperia INTEGER,
+        nombre TEXT,
+        rut TEXT,
+        direccion TEXT,
+        telefono TEXT,
+        email TEXT,
+        FOREIGN KEY (id_roperia) REFERENCES ${this.DB_TABLE_ROPERIA}(id)
+      );`,
+
+      `CREATE TABLE IF NOT EXISTS ${this.DB_TABLE_LAVADO} (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_prenda INTEGER,
+        cantidad INTEGER,
+        fecha_ingreso TEXT,
+        id_lavanderia INTEGER,
+        FOREIGN KEY (id_prenda) REFERENCES ${this.DB_TABLE_PRENDA}(id),
+        FOREIGN KEY (id_lavanderia) REFERENCES ${this.DB_TABLE_LAVANDERIA}(id)
+      );`,
+
+      `CREATE TABLE IF NOT EXISTS ${this.DB_TABLE_UNIDAD} (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_roperia INTEGER,
+        nombre_unidad TEXT,
+        coordinador TEXT,
+        telefono TEXT,
+        mail TEXT,
+        FOREIGN KEY (id_roperia) REFERENCES ${this.DB_TABLE_ROPERIA}(id)
+      );`,
+
+      `CREATE TABLE IF NOT EXISTS ${this.DB_TABLE_UNIDAD_RETORNO} (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_unidad INTEGER,
+        id_prenda INTEGER,
+        cantidad_devuelta INTEGER,
+        fecha_retorno TEXT,
+        FOREIGN KEY (id_unidad) REFERENCES ${this.DB_TABLE_UNIDAD}(id),
+        FOREIGN KEY (id_prenda) REFERENCES ${this.DB_TABLE_PRENDA}(id)
+      );`,
       
-      if (resultado.length > 0) {
-        return resultado[0];
-      } else {
-        console.log('Usuario no encontrado');
-        return null;
-      }
+       `CREATE TABLE IF NOT EXISTS ${this.DB_TABLE_UNIDAD_RSUCIAS} (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_unidad INTEGER,
+        id_prenda INTEGER,
+        cantidad_devuelta INTEGER,
+        fecha_retorno TEXT,
+        FOREIGN KEY (id_unidad) REFERENCES ${this.DB_TABLE_UNIDAD}(id),
+        FOREIGN KEY (id_prenda) REFERENCES ${this.DB_TABLE_PRENDA}(id)
+      );`,
+
+      `CREATE TABLE IF NOT EXISTS ${this.DB_TABLE_BAJAS} (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_prenda INTEGER,
+        cantidad INTEGER,
+        detalle TEXT,
+        destino TEXT,
+        fecha_ingreso TEXT,
+        FOREIGN KEY (id_prenda) REFERENCES ${this.DB_TABLE_PRENDA}(id)
+      );`,
+
+      `CREATE TABLE IF NOT EXISTS ${this.DB_TABLE_REPARACIONES} (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_prenda INTEGER,
+        cantidad INTEGER,
+        detalle TEXT,
+        fecha_ingreso TEXT,
+        FOREIGN KEY (id_prenda) REFERENCES ${this.DB_TABLE_PRENDA}(id)
+      );`
+    ];
+
+    for (const sql of tablasSQL) {
+      await this.db.execute(sql);
+    }
+  }
+  //#endregion
+
+  //#region CRUD Genérico
+  private async ejecutar(sql: string, params: any[] = []): Promise<any> {
+    if (!this.iniciado || !this.db) {
+      return null;
+    }
+    try {
+      return await this.db.run(sql, params);
     } catch (error) {
-      console.error('Error al obtener usuario por RUT:', error);
+      console.error('Error en ejecución SQL:', sql, params, error);
       return null;
     }
   }
-  
-  async obtenerTodosUsuarios(): Promise<any[]> {
-    const sql = `SELECT * FROM ${this.DB_TABLE_USUARIO}`;
-    const resultado = (await this.db.query(sql)).values;
-    return resultado ?? [];
-  }
-  async eliminarUsuario(id: number) {
-    const sql = `DELETE FROM ${this.DB_TABLE_USUARIO} WHERE id = ?`;
-    await this.db.run(sql, [id]);
-  }
-  async getRoperiaId(): Promise<number | null> {
-    try {
-        const resultado = await this.db.query(`SELECT id FROM ${this.DB_TABLE_ROPERIA} LIMIT 1`);
-        if (resultado.values && resultado.values.length > 0) {
-            return resultado.values[0].id; // Devuelve el ID de la primera ropería encontrada
-        }
-        return null; // No hay roperías disponibles
-    } catch (error) {
-        console.error("🚨 Error al obtener el ID de la ropería:", error);
-        return null;
+
+  private async query(sql: string, params: any[] = []): Promise<any[]> {
+    if (!this.iniciado || !this.db) {
+      return [];
     }
-}
-  
-async depurarTablas() {
-  try {
-      const tablas = ['usuario', 'roperia'];
-      for (const tabla of tablas) {
-          const resultado = await this.db.query(`SELECT * FROM ${tabla}`);
-          console.log(`Contenido de la tabla ${tabla}:`, resultado.values);
-      }
-  } catch (error) {
-      console.error("🚨 Error al depurar tablas:", error);
+    try {
+      const res = await this.db.query(sql, params);
+      return res.values ?? [];
+    } catch (error) {
+      console.error('Error en consulta SQL:', sql, params, error);
+      return [];
+    }
   }
+  //#endregion
+
+  //#region CRUD Prenda
+  async obtenerTodasPrenda(): Promise<Prenda[]> {
+    return this.query(`SELECT * FROM ${this.DB_TABLE_PRENDA}`);
+  }
+
+  async buscarPrendaPorNombre(nombre: string): Promise<Prenda[]> {
+    if (!nombre) {
+      return [];
+    }
+    return this.query(`SELECT * FROM ${this.DB_TABLE_PRENDA} WHERE nombre LIKE ?`, [`%${nombre}%`]);
+  }
+
+  async insertarPrenda(prenda: Prenda) {
+    await this.ejecutar(
+      `INSERT INTO ${this.DB_TABLE_PRENDA} (nombre, descripcion, cantidad, tipo, id_roperia) VALUES (?, ?, ?, ?, ?)`,
+      [prenda.nombre, prenda.descripcion, prenda.cantidad, prenda.tipo, prenda.id_roperia]
+    );
+  }
+
+  async actualizarPrenda(prenda: Prenda) {
+    await this.ejecutar(
+      `UPDATE ${this.DB_TABLE_PRENDA} SET nombre = ?, descripcion = ?, cantidad = ?, tipo = ? WHERE id = ?`,
+      [prenda.nombre, prenda.descripcion, prenda.cantidad, prenda.tipo, prenda.id]
+    );
+  }
+
+  async eliminarPrenda(id: number) {
+    await this.ejecutar(`DELETE FROM ${this.DB_TABLE_PRENDA} WHERE id = ?`, [id]);
+  }
+  //#endregion
+
+  //#region CRUD Lavandería
+  async obtenerTodasLavanderias(): Promise<Lavanderia[]> {
+    return this.query(`SELECT * FROM ${this.DB_TABLE_LAVANDERIA}`);
+  }
+
+  async insertarLavanderia(lav: Lavanderia) {
+    await this.ejecutar(
+      `INSERT INTO ${this.DB_TABLE_LAVANDERIA} (id_roperia, nombre, rut, direccion, telefono, email) VALUES (?, ?, ?, ?, ?, ?)`,
+      [lav.id_roperia, lav.nombre, lav.rut, lav.direccion, lav.telefono, lav.email]
+    );
+  }
+
+  async actualizarLavanderia(lav: Lavanderia) {
+    await this.ejecutar(
+      `UPDATE ${this.DB_TABLE_LAVANDERIA} SET nombre = ?, rut = ?, direccion = ?, telefono = ?, email = ? WHERE id = ?`,
+      [lav.nombre, lav.rut, lav.direccion, lav.telefono, lav.email, lav.id]
+    );
+  }
+
+  async eliminarLavanderia(id: number) {
+    await this.ejecutar(`DELETE FROM ${this.DB_TABLE_LAVANDERIA} WHERE id = ?`, [id]);
+  }
+  //#endregion
+
+  //#region CRUD Lavado
+  async obtenerTodosLavado(): Promise<Lavado[]> {
+    return this.query(`SELECT * FROM ${this.DB_TABLE_LAVADO}`);
+  }
+
+  async insertarRopaLavado(lavado: Lavado) {
+    await this.ejecutar(
+      `INSERT INTO ${this.DB_TABLE_LAVADO} (id_prenda, cantidad, fecha_ingreso, id_lavanderia) VALUES (?, ?, ?, ?)`,
+      [lavado.id_prenda, lavado.cantidad, lavado.fecha_ingreso, lavado.id_lavanderia]
+    );
+  }
+
+  async actualizarLavado(lavado: Lavado) {
+    await this.ejecutar(
+      `UPDATE ${this.DB_TABLE_LAVADO} SET id_prenda = ?, cantidad = ?, id_lavanderia = ?, fecha_ingreso = ? WHERE id = ?`,
+      [lavado.id_prenda, lavado.cantidad, lavado.id_lavanderia, lavado.fecha_ingreso, lavado.id]
+    );
+  }
+
+  async eliminarLavado(id: number) {
+    await this.ejecutar(`DELETE FROM ${this.DB_TABLE_LAVADO} WHERE id = ?`, [id]);
+  }
+  //#endregion
+
+  //#region CRUD Unidad y Retorno
+  async obtenerTodasUnidad(): Promise<Unidad[]> {
+    return this.query(`SELECT * FROM ${this.DB_TABLE_UNIDAD}`);
+  }
+
+  async insertarUnidad(unidad: Unidad) {
+    await this.ejecutar(
+      `INSERT INTO ${this.DB_TABLE_UNIDAD} (id_roperia, nombre_unidad, coordinador, telefono, mail) VALUES (?, ?, ?, ?, ?)`,
+      [unidad.id_roperia, unidad.nombre_unidad, unidad.coordinador, unidad.telefono, unidad.mail]
+    );
+  }
+
+  async actualizarUnidad(unidad: Unidad) {
+    await this.ejecutar(
+      `UPDATE ${this.DB_TABLE_UNIDAD} SET nombre_unidad = ?, coordinador = ?, telefono = ?, mail = ? WHERE id = ?`,
+      [unidad.nombre_unidad, unidad.coordinador, unidad.telefono, unidad.mail, unidad.id]
+    );
+  }
+
+  async eliminarUnidad(id: number) {
+    await this.ejecutar(`DELETE FROM ${this.DB_TABLE_UNIDAD} WHERE id = ?`, [id]);
+  }
+
+  async obtenerTodasUnidadRetorno(): Promise<Unidad_retorno[]> {
+    return this.query(`SELECT * FROM ${this.DB_TABLE_UNIDAD_RETORNO}`);
+  }
+
+  async insertarUnidadRetorno(unidadRetorno: Unidad_retorno) {
+    await this.ejecutar(
+      `INSERT INTO ${this.DB_TABLE_UNIDAD_RETORNO} (id_unidad, id_prenda, cantidad_devuelta, fecha_retorno) VALUES (?, ?, ?, ?)`,
+      [unidadRetorno.id_unidad, unidadRetorno.id_prenda, unidadRetorno.cantidad_devuelta, unidadRetorno.fecha_retorno]
+    );
+  }
+
+  async actualizarUnidadRetorno(unidadRetorno: Unidad_retorno) {
+    await this.ejecutar(
+      `UPDATE ${this.DB_TABLE_UNIDAD_RETORNO} SET id_unidad = ?, id_prenda = ?, cantidad_devuelta = ?, fecha_retorno = ? WHERE id = ?`,
+      [unidadRetorno.id_unidad, unidadRetorno.id_prenda, unidadRetorno.cantidad_devuelta, unidadRetorno.fecha_retorno, unidadRetorno.id]
+    );
+  }
+
+  async eliminarUnidadRetorno(id: number) {
+    await this.ejecutar(`DELETE FROM ${this.DB_TABLE_UNIDAD_RETORNO} WHERE id = ?`, [id]);
+  }
+  //#endregion
+
+  //#region CRUD Bajas
+  async obtenerTodasBajas(): Promise<Bajas[]> {
+    return this.query(`SELECT * FROM ${this.DB_TABLE_BAJAS}`);
+  }
+
+  async insertarBajas(baja: Bajas) {
+    await this.ejecutar(
+      `INSERT INTO ${this.DB_TABLE_BAJAS} (id_prenda, cantidad, detalle, destino, fecha_ingreso) VALUES (?, ?, ?, ?, ?)`,
+      [baja.id_prenda, baja.cantidad, baja.detalle, baja.destino, baja.fecha_ingreso]
+    );
+  }
+
+  async actualizarBajas(baja: Bajas) {
+    await this.ejecutar(
+      `UPDATE ${this.DB_TABLE_BAJAS} SET id_prenda = ?, cantidad = ?, detalle = ?, destino = ?, fecha_ingreso = ? WHERE id = ?`,
+      [baja.id_prenda, baja.cantidad, baja.detalle, baja.destino, baja.fecha_ingreso, baja.id]
+    );
+  }
+
+  async eliminarBajas(id: number) {
+    await this.ejecutar(`DELETE FROM ${this.DB_TABLE_BAJAS} WHERE id = ?`, [id]);
+  }
+  //#endregion
+
+  //#region Utilidades
+  async getRoperiaId(): Promise<number | null> {
+    const res = await this.query(`SELECT id FROM ${this.DB_TABLE_ROPERIA} LIMIT 1`);
+    return res?.[0]?.id ?? null;
+  }
+
+  async depurarTablas(): Promise<void> {
+    const tablas = [
+      this.DB_TABLE_ROPERIA, this.DB_TABLE_PRENDA, this.DB_TABLE_LAVANDERIA,
+      this.DB_TABLE_LAVADO, this.DB_TABLE_UNIDAD, this.DB_TABLE_UNIDAD_RETORNO,
+      this.DB_TABLE_BAJAS
+    ];
+    for (const tabla of tablas) {
+      const datos = await this.query(`SELECT * FROM ${tabla}`);
+      console.log(`Contenido tabla ${tabla}:`, datos);
+    }
+  }
+
+  async ejecutarConsulta(sql: string, params: any[] = []): Promise<any> {
+    return this.ejecutar(sql, params);
+  }
+  //#endregion
 }
-
-}
-
-

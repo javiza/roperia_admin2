@@ -1,48 +1,101 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { AuthService } from 'src/app/servicios/auth.service';
-import { NavController } from '@ionic/angular';
-import { DbService } from 'src/app/servicios/db.service';
 import { CommonModule } from '@angular/common';
-import { IonHeader, IonButton, IonText, IonItem, IonInput, IonLabel, IonTitle, IonToolbar, IonContent } from "@ionic/angular/standalone";
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from 'src/app/auth/auth.service';
+import { 
+  IonContent, 
+  IonItem, 
+  IonLabel, 
+  IonInput, 
+  IonSegment, 
+  IonSegmentButton, 
+  IonButton, 
+  IonText, 
+  IonSpinner 
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-formulario-inicio',
   templateUrl: './formulario-inicio.component.html',
   styleUrls: ['./formulario-inicio.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonButton, IonText, IonItem, IonInput, IonTitle, IonToolbar, IonContent, IonHeader, ReactiveFormsModule]
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    IonContent,
+    IonItem,
+    IonLabel,
+    IonInput,
+    IonSegment,
+    IonSegmentButton,
+    IonButton,
+    IonText,
+    IonSpinner
+  ]
 })
 export class FormularioInicioComponent implements OnInit {
   loginForm: FormGroup;
   errorMessage: string = '';
+  loading: boolean = false;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private dbService: DbService,
-    private navCtrl: NavController
+    private router: Router
   ) {
     this.loginForm = this.fb.group({
-      rut: ['', [Validators.required]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      rut: ['', [Validators.required, Validators.pattern(/^\d{7,9}-[0-9kK]$/)]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      role: ['', Validators.required]
     });
   }
 
-  ngOnInit() {}
-
-  async onSubmit() {
-    if (this.loginForm.valid) {
-      const { rut, password } = this.loginForm.value;
-  
-      const result = await this.authService.login(rut, password);
-      if (result) {
-        console.log('Inicio de sesión exitoso', result);
-        this.navCtrl.navigateRoot('/usuario'); // Redirigir correctamente
-      } else {
-        this.errorMessage = 'Rut o contraseña incorrectos';
-      }
+  ngOnInit() {
+    this.loginForm.valueChanges.subscribe(() => this.errorMessage = '');
+    const tokenRole = this.authService.getRoleFromToken();
+    if (tokenRole) {
+      this.loginForm.patchValue({ role: tokenRole.toLowerCase() });
     }
   }
-  
+
+  async onSubmit() {
+    if (this.loginForm.invalid) {
+      this.errorMessage = 'Por favor completa todos los campos correctamente';
+      return;
+    }
+    this.loading = true;
+    const { rut, password, role } = this.loginForm.value;
+
+    try {
+      const success = await this.authService.login(rut, password);
+      if (!success) { 
+        this.errorMessage = 'RUT o contraseña incorrectos'; 
+        return; 
+      }
+
+      const tokenRole = this.authService.getRoleFromToken();
+      if (!tokenRole) { 
+        this.errorMessage = 'Token inválido'; 
+        return; 
+      }
+
+      if (tokenRole.toLowerCase() !== role.toLowerCase()) {
+        this.errorMessage = `El rol seleccionado no coincide con tus permisos`;
+        return;
+      }
+
+      switch (tokenRole.toLowerCase()) {
+        case 'admin': this.router.navigate(['/admin']); break;
+        case 'usuario': this.router.navigate(['/usuario']); break;
+        default: this.errorMessage = 'Rol no permitido';
+      }
+    } catch (error) {
+      console.error('Error al iniciar sesión:', error);
+      this.errorMessage = 'Ocurrió un error al intentar iniciar sesión. Inténtalo nuevamente.';
+    } finally { 
+      this.loading = false; 
+    }
+  }
 }

@@ -2,21 +2,40 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { IonHeader, IonButton, IonText, IonItem, IonInput, IonLabel, IonTitle, IonToolbar, IonContent, IonList } from "@ionic/angular/standalone";
-import { ProductoService } from 'src/app/servicios/producto.service';
 import { DbService } from 'src/app/servicios/db.service';
+import { UsuarioService } from 'src/app/servicios/usuario.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-ingreso-usuarios',
   templateUrl: './ingreso-usuarios.component.html',
   styleUrls: ['./ingreso-usuarios.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonButton, IonItem, IonInput, IonLabel, IonTitle, IonToolbar, IonContent, IonHeader, IonList, ReactiveFormsModule]
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    IonButton,
+    IonItem,
+    IonInput,
+    IonLabel,
+    IonTitle,
+    IonToolbar,
+    IonContent,
+    IonHeader,
+    IonList
+  ],
+  providers: [DbService, UsuarioService] // Asegura inyección
 })
 export class IngresoUsuariosComponent implements OnInit {
   ingresarUsuarioForm: FormGroup;
   usuarios: any[] = [];
+  usuarioEditandoId: number | null = null;
 
-  constructor(private fb: FormBuilder, private productoService: ProductoService, private dbService: DbService) {
+  constructor(
+    private fb: FormBuilder,
+    private dbService: DbService,
+    private usuarioService: UsuarioService
+  ) {
     this.ingresarUsuarioForm = this.fb.group({
       nombre: ['', Validators.required],
       rut: ['', [Validators.required, this.validarRutChileno]],
@@ -25,68 +44,62 @@ export class IngresoUsuariosComponent implements OnInit {
     }, { validator: this.passwordsIguales });
   }
 
-  async ngOnInit() {
-    await this.dbService.iniciarPlugin();
-
-    // Depurar tablas para verificar su contenido
-    await this.dbService.depurarTablas();
-
-    // Verificar si hay roperías en la base de datos
-    const roperia = await this.dbService.getRoperiaId();
-    if (!roperia) {
-        console.error("No hay ropería disponible. No se puede continuar.");
-        return;
-    }
-    console.log("🛠️ Ropería encontrada:", roperia);
-
-    this.cargarUsuarios();
-}
-  
+  ngOnInit(): void {
+    (async () => {
+      await this.dbService.iniciarPlugin();
+      await this.dbService.depurarTablas();
+      const roperia = await this.dbService.getRoperiaId();
+      if (!roperia) {
+        return console.error("No hay ropería disponible.");
+      }
+      await this.cargarUsuarios();
+    })();
+  }
 
   validarRutChileno(control: AbstractControl): { [key: string]: boolean } | null {
     const rut = control.value;
     if (!rut || rut.length < 8 || rut.length > 10) {
       return { rutInvalido: true };
     }
-    // Aquí puedes agregar la lógica para validar el RUT chileno
     return null;
   }
 
   passwordsIguales(group: FormGroup): { [key: string]: boolean } | null {
-    const password = group.get('password')?.value;
-    const repetirPassword = group.get('repetirPassword')?.value;
-    return password === repetirPassword ? null : { noCoinciden: true };
+    return group.get('password')?.value === group.get('repetirPassword')?.value ? null : { noCoinciden: true };
   }
 
   async onSubmit() {
-    if (this.ingresarUsuarioForm.valid) {
-        const { nombre, rut, password } = this.ingresarUsuarioForm.value;
-
-        // Obtener un roperia_id válido desde la base de datos
-        const roperia = await this.dbService.getRoperiaId();
-        if (!roperia) {
-            console.error("No hay ropería disponible. No se puede agregar el usuario.");
-            return;
-        }
-
-        console.log('Usuario ingresado:', { nombre, rut, password });
-
-        await this.productoService.agregarUsuario(nombre, rut, password);
-        this.cargarUsuarios();
+    if (!this.ingresarUsuarioForm.valid) {
+      return;
     }
-}
-  
+    const { nombre, rut, password } = this.ingresarUsuarioForm.value;
+    const roperia = await this.dbService.getRoperiaId();
+    if (!roperia) {
+      return console.error("No hay ropería disponible.");
+    }
+    const nuevoUsuario = { id: 0, nombre_usuario: nombre, rut, password, role: 'usuario' };
+    await firstValueFrom(this.usuarioService.registrar(nuevoUsuario));
+    await this.cargarUsuarios();
+    this.ingresarUsuarioForm.reset();
+  }
 
   async cargarUsuarios() {
-    this.usuarios = await this.productoService.getUsuarios();
+    const res = await firstValueFrom(this.usuarioService.obtenerUsuario());
+    this.usuarios = res?.user ? [res.user] : Array.isArray(res) ? res : [];
   }
 
   editarUsuario(usuario: any) {
-    this.ingresarUsuarioForm.patchValue(usuario);
+    this.usuarioEditandoId = usuario.id;
+    this.ingresarUsuarioForm.patchValue({
+      nombre: usuario.nombre_usuario,
+      rut: usuario.rut,
+      password: '',
+      repetirPassword: ''
+    });
   }
 
   async eliminarUsuario(id: number) {
-    await this.productoService.eliminarUsuario(id);
-    this.cargarUsuarios();
+    await firstValueFrom(this.usuarioService.eliminarUsuario(id));
+    await this.cargarUsuarios();
   }
 }

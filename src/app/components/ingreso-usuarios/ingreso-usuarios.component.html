@@ -18,13 +18,15 @@
     <ion-item>
       <ion-input label="Repetir Contraseña" type="password" formControlName="repetirPassword"></ion-input>
     </ion-item>
-    <ion-button expand="full" type="submit">Agregar Usuario</ion-button>
+    <ion-button expand="full" type="submit">
+      {{ usuarioEditandoId ? 'Actualizar Usuario' : 'Agregar Usuario' }}
+    </ion-button>
   </form>
 
   <ion-list>
     <ion-item *ngFor="let usuario of usuarios">
       <ion-label>
-        <h2>{{ usuario.nombre_usuario }}</h2>
+        <h2>{{ usuario.nombre }}</h2>
         <p>{{ usuario.rut }}</p>
         <p>{{ usuario.password }}</p>
       </ion-label>

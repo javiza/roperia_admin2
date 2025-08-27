@@ -1,77 +1,51 @@
 import { Injectable } from '@angular/core';
-import { Producto, Lavanderia } from '../modelo/producto';
+import { Usuario, Prenda, Lavanderia, Bajas, Unidad } from '../modelo/producto';
 import { DbService } from './db.service';
+import { UsuarioService } from './usuario.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductoService {
-
   constructor(
-    private dbService: DbService
-  ) { }
+    private dbService: DbService,
+    private usuarioService: UsuarioService
+  ) {}
 
-  async agregarProducto(producto: Producto) {
-    await this.dbService.insertar(producto);
-  }
-  
-  async getProductos(): Promise<Producto[]> {
-    return this.dbService.obtenerTodos();
-  }
- 
-  async getProductosOrdenadosAlfabeticamente(): Promise<Producto[]> {
-    const productos = await this.getProductos();
-    return productos?.sort((a, b) => a?.nombre?.localeCompare(b?.nombre));
-  }
+  // //#region CRUD Usuario vía API
+  // async agregarUsuario(usuario: Usuario) {
+  //   return this.usuarioService.registrar(usuario).toPromise();
+  // }
 
-  async editar(producto: Producto) {
-    await this.dbService.actualizar(producto);
-  }
+  // async getUsuarios(token: string) {
+  //   return this.usuarioService.obtenerUsuario(token).toPromise();
+  // }
 
-  async eliminar(id: number) {
-    if (id !== undefined && id > 0) {
-      await this.dbService.eliminar(id);
-    }    
-  }
-  async editarRopaLavanderia(producto: Lavanderia) {
-    await this.dbService.actualizarLavanderia(producto);
-  }
-  async getLavanderia(): Promise<Lavanderia[]> {
-    return this.dbService.obtenerTodosLavanderia();
-  }
-  async agregarLavanderia(producto: Lavanderia) {
-    await this.dbService.insertarRopaLavanderia(producto);
-  }
-  
-  async eliminarLavanderia(id: number) {
-    if (id !== undefined && id > 0) {
-      await this.dbService.eliminarLavanderia(id);
-    }
-  }
-  
+  // async actualizarUsuario(id: number, datos: Partial<Usuario>, token: string) {
+  //   return this.usuarioService.actualizarUsuario(id, datos, token).toPromise();
+  // }
 
-  async agregarUnidad(nombre_prenda: string, cantidad: number, roperia_id: number) {
-    await this.dbService.insertarRopaUnidad(nombre_prenda, cantidad, roperia_id);
-  }
+  // async eliminarUsuario(id: number, token: string) {
+  //   return this.usuarioService.eliminarUsuario(id, token).toPromise();
+  // }
+  // //#endregion
 
-  async agregarBaja(nombre_prenda: string, cantidad: number, roperia_id: number) {
-    await this.dbService.insertarBajas(nombre_prenda, cantidad, roperia_id);
-  }
+  //#region CRUD Prenda, Lavanderia, Unidad, Bajas
+  async agregarProducto(producto: Prenda) { await this.dbService.insertarPrenda(producto); }
+  async getProductos(): Promise<Prenda[]> { return this.dbService.obtenerTodasPrenda(); }
+  async editarProducto(producto: Prenda) { await this.dbService.actualizarPrenda(producto); }
+  async eliminarProducto(id: number) { await this.dbService.eliminarPrenda(id); }
 
-  async agregarFuncionario(nombre_funcionario: string, nombre_prenda: string, roperia_id: number) {
-    await this.dbService.insertarFuncionario(nombre_funcionario, nombre_prenda, roperia_id);
-  }
-  async agregarUsuario(nombre_usuario: string, rut: string, password: string) {
-    await this.dbService.insertarUsuario(nombre_usuario, rut, password);
-  }
-  async agregarAdmin(nombre_admin: string, rut: string, password: string) {
-    await this.dbService.insertarAdmin(nombre_admin, rut, password);
-  }
-  async getUsuarios(): Promise<any[]> {
-        return this.dbService.obtenerTodosUsuarios();
-      }
-  async eliminarUsuario(id: number) {
-       await this.dbService.eliminarUsuario(id);
-       }
+  async agregarLavanderia(lav: Lavanderia) { await this.dbService.insertarLavanderia(lav); }
+  async getLavanderias(): Promise<Lavanderia[]> { return this.dbService.obtenerTodasLavanderias(); }
+  async eliminarLavanderia(id: number) { await this.dbService.eliminarLavanderia(id); }
+
+  async agregarUnidad(unidad: Unidad) { await this.dbService.insertarUnidad(unidad); }
+  async getUnidades(): Promise<Unidad[]> { return this.dbService.obtenerTodasUnidad(); }
+  async eliminarUnidad(id: number) { await this.dbService.eliminarUnidad(id); }
+
+  async agregarBaja(baja: Bajas) { await this.dbService.insertarBajas(baja); }
+  async getBajas(): Promise<Bajas[]> { return this.dbService.obtenerTodasBajas(); }
+  async eliminarBaja(id: number) { await this.dbService.eliminarBajas(id); }
+  //#endregion
 }
-
